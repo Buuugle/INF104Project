@@ -1,5 +1,5 @@
 def error(message):
-    print("Erreur :", message)
+    print("\n\n*** ATTENTION ***\n" + message)
 
 
 def min_int_input(message, fail="", value=0):

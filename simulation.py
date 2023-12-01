@@ -13,6 +13,9 @@ def generate_partic_coords(Xwidth):
 
 
 def calc_all_coords(lst_coords_in_det, cell_width):
+    if cell_width <= 0:
+        error("La taille des cellules doit être strictement positive")
+        return
     x = lst_coords_in_det[0] / cell_width
     y = lst_coords_in_det[1] / cell_width
     if x <= 0 or y <= 0:
@@ -28,17 +31,13 @@ def calc_all_coords(lst_coords_in_det, cell_width):
 def calculate_fraction_E_in_cells(lst_coords_in_cell, matE, Xwidth, n_cells):
     mat_size = 5
     if len(matE) != mat_size:
-        print(
-            "\n\n*** ATTENTION ***\nLa taille de la matrice fournie en argument de calculate_fraction_E_in_cells n'a "
-            "pas l'air correcte.\nSortie anormale de la fonction.\n\n\n")
+        print("\n\n*** ATTENTION ***\nLa taille de la matrice fournie en argument de calculate_fraction_E_in_cells n'a pas l'air correcte.\nSortie anormale de la fonction.\n\n\n")
         return
     if Xwidth != 100:
-        print("\n\n*** ATTENTION ***\nLa largeur de detecteur recue est", Xwidth,
-              "cm au lieu de 100 cm.\nSortie anormale de la fonction.\n\n\n")
+        print("\n\n*** ATTENTION ***\nLa largeur de detecteur recue est", Xwidth, "cm au lieu de 100 cm.\nSortie anormale de la fonction.\n\n\n")
         return
     if not (5 <= n_cells <= 50):
-        print("\n\n*** ATTENTION ***\nLe nombre", n_cells,
-              " de cellules recu est invalide.\nSortie anormale de la fonction.\n\n\n")
+        print("\n\n*** ATTENTION ***\nLe nombre", n_cells, " de cellules recu est invalide.\nSortie anormale de la fonction.\n\n\n")
         return
     # Quick trick to see an actual center for large n_cells and still keep fluctuations for low n_cells:
     # nbTirages = int(100 * (n_cells / 20))
@@ -102,13 +101,19 @@ def simulate_signal(lst_coords_in_cell, Xwidth, N):
 
 
 def launch_particle_on_detector(Xwidth, N, n, matrix):
+    if Xwidth <= 0:
+        error("La longueur du détecteur doit être strictement positive")
+        return
     size = N + 2 * n
     if len(matrix) != size:
-        error("La taille de la matrice ne correspond pas à la taille calculée à partir du nombre de cellules et de la "
-              "marge")
+        error("La taille de la matrice doit correspondre à la taille calculée à partir du nombre de cellules et de la marge")
         return
+    for line in matrix:
+        if len(line) != size:
+            error("La matrice doit être carrée")
+            return
     if size < 5:
-        error("La taille de la matrice est trop petite")
+        error("La taille de la matrice doit être supérieure ou égale à 5")
         return
     cell_width = Xwidth / size
     detector_width = cell_width * N
@@ -129,6 +134,9 @@ def launch_particle_on_detector(Xwidth, N, n, matrix):
 
 
 def create_event(Xwidth, N, n, matrix, particles):
+    if particles <= 0:
+        error("Le nombre de particules doit être strictement positif")
+        return
     all_coords = []
     for i in range(particles):
         coords = launch_particle_on_detector(Xwidth, N, n, matrix)

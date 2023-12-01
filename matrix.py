@@ -21,6 +21,9 @@ def xy_to_ij(lst_xy, n_size_mat):
     if x < 0 or y < 0:
         error("Les coordonnées x et y doivent être positives")
         return
+    if n_size_mat <= 0:
+        error("La taille de la matrice doit être strictement positive")
+        return
     return [n_size_mat - 1 - y, x]
 
 
