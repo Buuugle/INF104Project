@@ -1,6 +1,65 @@
 from random import random, gauss
 from copy import deepcopy
-from matrix import *
+from util import error
+
+
+def create_empty_matrix(nbCells, marge=0):
+    if nbCells <= 0:
+        error("Le nombre de cellules doit être strictement positif")
+        return
+    if marge < 0:
+        error("La marge doit être un nombre positif")
+        return
+    n = nbCells + 2 * marge
+    matrix = []
+    for i in range(n):
+        matrix.append([0.0] * n)
+    return matrix
+
+
+def xy_to_ij(lst_xy, n_size_mat):
+    x = lst_xy[0]
+    y = lst_xy[1]
+    if x < 0 or y < 0:
+        error("Les coordonnées x et y doivent être positives")
+        return
+    if n_size_mat <= 0:
+        error("La taille de la matrice doit être strictement positive")
+        return
+    return [n_size_mat - 1 - y, x]
+
+
+def affiche_matrice(matrix):
+    for line in matrix:
+        for element in line:
+            print(round(element, 2), end=" ")
+        print()
+
+
+def affiche_matrix_bool(matrix):
+    for line in matrix:
+        for element in line:
+            display = ". "
+            if element > 0.0:
+                display = "# "
+            print(display, end="")
+        print()
+
+
+def affiche_matrice_energy(matrix):
+    for line in matrix:
+        for element in line:
+            display = "--"
+            if element > 0.01:
+                display = ". "
+            if element > 0.25:
+                display = "o "
+            if element > 0.5:
+                display = "* "
+            if element > 0.75:
+                display = "# "
+            print(display, end="")
+        print()
 
 
 def generate_partic_coords(Xwidth):
@@ -31,13 +90,16 @@ def calc_all_coords(lst_coords_in_det, cell_width):
 def calculate_fraction_E_in_cells(lst_coords_in_cell, matE, Xwidth, n_cells):
     mat_size = 5
     if len(matE) != mat_size:
-        print("\n\n*** ATTENTION ***\nLa taille de la matrice fournie en argument de calculate_fraction_E_in_cells n'a pas l'air correcte.\nSortie anormale de la fonction.\n\n\n")
+        print(
+            "\n\n*** ATTENTION ***\nLa taille de la matrice fournie en argument de calculate_fraction_E_in_cells n'a pas l'air correcte.\nSortie anormale de la fonction.\n\n\n")
         return
     if Xwidth != 100:
-        print("\n\n*** ATTENTION ***\nLa largeur de detecteur recue est", Xwidth, "cm au lieu de 100 cm.\nSortie anormale de la fonction.\n\n\n")
+        print("\n\n*** ATTENTION ***\nLa largeur de detecteur recue est", Xwidth,
+              "cm au lieu de 100 cm.\nSortie anormale de la fonction.\n\n\n")
         return
     if not (5 <= n_cells <= 50):
-        print("\n\n*** ATTENTION ***\nLe nombre", n_cells, " de cellules recu est invalide.\nSortie anormale de la fonction.\n\n\n")
+        print("\n\n*** ATTENTION ***\nLe nombre", n_cells,
+              " de cellules recu est invalide.\nSortie anormale de la fonction.\n\n\n")
         return
     # Quick trick to see an actual center for large n_cells and still keep fluctuations for low n_cells:
     # nbTirages = int(100 * (n_cells / 20))
@@ -106,7 +168,8 @@ def launch_particle_on_detector(Xwidth, N, n, matrix):
         return
     size = N + 2 * n
     if len(matrix) != size:
-        error("La taille de la matrice doit correspondre à la taille calculée à partir du nombre de cellules et de la marge")
+        error(
+            "La taille de la matrice doit correspondre à la taille calculée à partir du nombre de cellules et de la marge")
         return
     for line in matrix:
         if len(line) != size:
@@ -115,9 +178,8 @@ def launch_particle_on_detector(Xwidth, N, n, matrix):
     if size < 5:
         error("La taille de la matrice doit être supérieure ou égale à 5")
         return
-    cell_width = Xwidth / size
-    detector_width = cell_width * N
-    lst_coords_in_det = generate_partic_coords(detector_width)
+    cell_width = Xwidth / N
+    lst_coords_in_det = generate_partic_coords(Xwidth)
     lst_coords_xy, lst_coords_in_cell = calc_all_coords(lst_coords_in_det, cell_width)
     lst_coords_ij = xy_to_ij(lst_coords_xy, N)
     signal_matrix = simulate_signal(lst_coords_in_cell, Xwidth, N)
@@ -149,3 +211,11 @@ def create_event(Xwidth, N, n, matrix, particles):
             line.pop(0)
             line.pop(-1)
     return all_coords
+
+
+def add_noise(matrix, ratio=0.05):
+    size = len(matrix)
+    for i in range(size):
+        for j in range(size):
+            if random() <= ratio:
+                matrix[i][j] += 0.1 * random()
