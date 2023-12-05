@@ -3,7 +3,7 @@ from copy import deepcopy
 from util import error
 
 
-def create_empty_matrix(nbCells, marge=0):
+def create_empty_matrix(nbCells, marge=0):  # Créer une matrice vide
     if nbCells <= 0:
         error("Le nombre de cellules doit être strictement positif")
         return
@@ -17,7 +17,7 @@ def create_empty_matrix(nbCells, marge=0):
     return matrix
 
 
-def xy_to_ij(lst_xy, n_size_mat):
+def xy_to_ij(lst_xy, n_size_mat):  # Convertisseur de coordonnées xy en ij
     x = lst_xy[0]
     y = lst_xy[1]
     if x < 0 or y < 0:
@@ -29,6 +29,7 @@ def xy_to_ij(lst_xy, n_size_mat):
     return [n_size_mat - 1 - y, x]
 
 
+# Les 3 fonctions d'affichage de matrices
 def affiche_matrice(matrix):
     for line in matrix:
         for element in line:
@@ -62,6 +63,7 @@ def affiche_matrice_energy(matrix):
         print()
 
 
+# Génération la particule de manière aléatoire
 def generate_partic_coords(Xwidth):
     if Xwidth <= 0:
         error("La longueur du détecteur doit être strictement positive")
@@ -71,6 +73,7 @@ def generate_partic_coords(Xwidth):
     return [x, y]
 
 
+# Séparer les coordonnées entière et fractionnaire de la cellules
 def calc_all_coords(lst_coords_in_det, cell_width):
     if cell_width <= 0:
         error("La taille des cellules doit être strictement positive")
@@ -87,6 +90,7 @@ def calc_all_coords(lst_coords_in_det, cell_width):
     return [int_x, int_y], [decimal_x, decimal_y]
 
 
+# Fonction fournie pour calculer les dépôts d'énergie
 def calculate_fraction_E_in_cells(lst_coords_in_cell, matE, Xwidth, n_cells):
     mat_size = 5
     if len(matE) != mat_size:
@@ -133,6 +137,7 @@ def calculate_fraction_E_in_cells(lst_coords_in_cell, matE, Xwidth, n_cells):
             matE[i][j] = matRdm[i][j] / nbTirages
 
 
+# Dissipation de l'énergie
 def smear_energy(matrix):
     copy_matrix = deepcopy(matrix)
     for line in copy_matrix:
@@ -141,6 +146,7 @@ def smear_energy(matrix):
     return copy_matrix
 
 
+# Application du seuil de détection
 def apply_threshold(matrix):
     for line in matrix:
         for index in range(len(line)):
@@ -148,6 +154,7 @@ def apply_threshold(matrix):
                 line[index] = 0.0
 
 
+# Simulation complète du signal
 def simulate_signal(lst_coords_in_cell, Xwidth, N):
     if Xwidth <= 0:
         error("La longueur du détecteur doit être strictement positive")
@@ -162,6 +169,7 @@ def simulate_signal(lst_coords_in_cell, Xwidth, N):
     return smeared_matrix
 
 
+# Lancer la particule sur le détecteur
 def launch_particle_on_detector(Xwidth, N, n, matrix):
     if Xwidth <= 0:
         error("La longueur du détecteur doit être strictement positive")
@@ -188,13 +196,14 @@ def launch_particle_on_detector(Xwidth, N, n, matrix):
     signal_matrix_size = len(signal_matrix)
     for signal_i in range(signal_matrix_size):
         for signal_j in range(signal_matrix_size):
-            temp_i = i + signal_i + n - 2
-            temp_j = j + signal_j + n - 2
-            if (0 <= temp_i < size) and (0 <= temp_j < size):
-                matrix[temp_i][temp_j] += signal_matrix[signal_i][signal_j]
+            new_i = i + signal_i + n - 2  # On change les index pour faire correspondre les éléments des deux matrices
+            new_j = j + signal_j + n - 2
+            if (0 <= new_i < size) and (0 <= new_j < size):
+                matrix[new_i][new_j] += signal_matrix[signal_i][signal_j]
     return lst_coords_in_det
 
 
+# Lancement de plusieurs particules
 def create_event(Xwidth, N, n, matrix, particles):
     if particles <= 0:
         error("Le nombre de particules doit être strictement positif")
@@ -203,7 +212,7 @@ def create_event(Xwidth, N, n, matrix, particles):
     for i in range(particles):
         coords = launch_particle_on_detector(Xwidth, N, n, matrix)
         all_coords.append(coords)
-    for i in range(n):
+    for i in range(n):  # On supprime les marges
         matrix.pop(0)
         matrix.pop(-1)
     for i in range(n):
@@ -213,6 +222,7 @@ def create_event(Xwidth, N, n, matrix, particles):
     return all_coords
 
 
+# Ajout de bruit
 def add_noise(matrix, ratio=0.05):
     size = len(matrix)
     for i in range(size):

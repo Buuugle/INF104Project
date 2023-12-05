@@ -1,8 +1,8 @@
-def error(message):
+def error(message):  # Cette fonction est un print décoré
     print("\n\n*** ATTENTION ***\n", message, sep="")
 
 
-def is_str_int(string):
+def is_str_int(string):  # Est-ce qu'une chaine de caractères peut être convertie en int ?
     if len(string) == 0:
         return False
     digits = "0123456789"
@@ -12,6 +12,7 @@ def is_str_int(string):
     return True
 
 
+# 3 fonctions d'input sécurisées qui font des boucles si la valeur n'est pas dans l'intervalle spécifié
 def min_int_input(message, fail="", value=0):
     while True:
         string = input(message)
@@ -46,7 +47,7 @@ def range_int_input(message, fail="", min_value=0, max_value=100):
         print(fail)
 
 
-def mean(lst):
+def mean(lst):  # Moyenne d'une liste
     size = len(lst)
     if size == 0:
         return 0
@@ -57,7 +58,7 @@ def mean(lst):
     return m
 
 
-def standard_deviation(lst):
+def standard_deviation(lst):  # Ecart type d'une liste
     size = len(lst)
     if size == 0:
         return 0
@@ -67,3 +68,10 @@ def standard_deviation(lst):
         sigma += abs(i - m) ** 2
     sigma = (sigma / size) ** 0.5
     return sigma
+
+
+def sub_list(lst, index_a, index_b):  # Créer une sous liste d'une liste
+    result = []
+    for index in range(index_a, index_b):
+        result.append(lst[index])
+    return result

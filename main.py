@@ -3,6 +3,7 @@ from simulation import *
 from analysis import *
 
 
+# Première fonction main. On simule des lancers de particules
 def mon_main(N):
     print("--- SIMULATEUR DE CALORIMÈTRE ---")
     Xwidth = 100
@@ -17,8 +18,9 @@ def mon_main(N):
         affiche_matrice_energy(matrix)
 
 
+# Deuxième fonction main. On simule des lancers de particules ET on reconstitue les coordonnées avec la méthode brute
 def mon_main2(N):
-    print("--- SIMULATEUR DE CALORIMÈTRE + RECONSTITUTION DE LA PARTICULE---")
+    print("--- SIMULATEUR DE CALORIMÈTRE V2---")
     Xwidth = 100
     n = 2
     events = min_int_input("\nNombre d'événements : ", "Le nombre d'événement doit être strictement positif.", 1)
@@ -53,14 +55,4 @@ def mon_main2(N):
     print("\t* Moyenne :\n\t\t- x : ", round(mean_dx, 2), "cm\n\t\t- y : ", round(mean_dy, 2), "cm", sep="")
     print("\t* Écart-type :\n\t\t- x : ", round(sigma_dx, 2), "cm\n\t\t- y : ", round(sigma_dy, 2), "cm", sep="")
 
-
-def test():
-    m = create_empty_matrix(10)
-    launch_particle_on_detector(100, 10, 0, m)
-    affiche_matrice_energy(m)
-    cluster = clusterize(m)
-    print(cluster)
-
-
-if __name__ == "__main__":
-    test()
+# Nous devons encore créer une troisième fonction main pour calculer les coordonnées reconstituées avec les clusters, en utilisant les dernières fonctions du fichier "analysis.py"
