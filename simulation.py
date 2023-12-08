@@ -203,12 +203,25 @@ def launch_particle_on_detector(Xwidth, N, n, matrix):
     return lst_coords_in_det
 
 
+# Ajout de bruit
+def add_noise(matrix, ratio=0.05):
+    size = len(matrix)
+    for i in range(size):
+        for j in range(size):
+            if random() < ratio:
+                matrix[i][j] += 0.1 * random()
+
+
 # Lancement de plusieurs particules
-def create_event(Xwidth, N, n, matrix, particles):
+def create_event(Xwidth, N, n, matrix, particles, noise_ratio):
     if particles <= 0:
         error("Le nombre de particules doit être strictement positif")
         return
+    if noise_ratio < 0 or noise_ratio > 0.1:
+        error("La proportion de cellules touchées par le bruit doit être comprise entre 0.0 et 0.1")
+        return
     all_coords = []
+    add_noise(matrix, noise_ratio)  # On ajoute le bruit avant de faire toutes les autres opérations
     for i in range(particles):
         coords = launch_particle_on_detector(Xwidth, N, n, matrix)
         all_coords.append(coords)
@@ -220,12 +233,3 @@ def create_event(Xwidth, N, n, matrix, particles):
             line.pop(0)
             line.pop(-1)
     return all_coords
-
-
-# Ajout de bruit
-def add_noise(matrix, ratio=0.05):
-    size = len(matrix)
-    for i in range(size):
-        for j in range(size):
-            if random() <= ratio:
-                matrix[i][j] += 0.1 * random()

@@ -3,56 +3,57 @@ from simulation import *
 from analysis import *
 
 
-# Première fonction main. On simule des lancers de particules
-def mon_main(N):
-    print("--- SIMULATEUR DE CALORIMÈTRE ---")
-    Xwidth = 100
-    n = 2
-    events = min_int_input("\nNombre d'événements : ", "Le nombre d'événement doit être strictement positif.", 1)
-    particles = min_int_input("\nNombre de particles par événements : ", "Le nombre de particules doit être strictement positif.", 1)
-    size = N + 2 * n
+def main():
+
+    print("=== SIMULATEUR DE CALORIMÈTRE ULTIME ===\n")
+
+    print("--- Propriétés du détecteur ---")
+    detector_width = 100
+    print("- Taille du détecteur : ", detector_width, "cm", sep="")
+    cells = min_int_input("- Nombre de cellules : ", "Le nombre de cellule doit être supérieur ou égal à 5.", 5)
+    cell_width = detector_width / cells
+    print("- Taille d'une cellule : ", cell_width, "cm", sep="")
+    padding = min_int_input("- Nombre de cellules de la marge : ", "La taille de la marge doit être positive.", 0)
+    size = cells + 2 * padding
+    print("- Nombre total de cellules :", size)
+
+    print("\n--- Propriétés de la simulation ---")
+    events = min_int_input("Nombre d'événements : ", "Le nombre d'événement doit être strictement positif.", 1)
+    particles = min_int_input("Nombre de particles par événements : ", "Le nombre de particules doit être strictement positif.", 1)
+    noise_ratio = range_float_input("Proportions de cellules touchées par le bruit : ", "La proportion de cellules touchées par le bruit doit être comprise entre 0.0 et 0.1.", 0.0, 0.1)
+
+    print("\n--- Début de la simulation ---\n")
     for i in range(1, events + 1):
-        matrix = create_empty_matrix(size)
-        create_event(Xwidth, N, n, matrix, particles)
-        print("\n¤ Événement n°", i, " : ", sep="")
+
+        matrix = create_empty_matrix(cells, padding)
+        true_coords_list = create_event(detector_width, cells, padding, matrix, particles, noise_ratio)
+        clusters = clusterize(matrix)
+        rec_coords_list = []
+        for j in range(len(clusters) - 1, -1, -1):  # On parcourt la liste à l'envers pour ajouter les coordonnées des clusters par odre croissant, car ils sont rangés initialement dans l'ordre décroissant
+            cluster = clusters[j]
+            rec_coords_list.append(mesure_xy_cluster(matrix, cell_width, cluster))
         affiche_matrice_energy(matrix)
-
-
-# Deuxième fonction main. On simule des lancers de particules ET on reconstitue les coordonnées avec la méthode brute
-def mon_main2(N):
-    print("--- SIMULATEUR DE CALORIMÈTRE V2---")
-    Xwidth = 100
-    n = 2
-    events = min_int_input("\nNombre d'événements : ", "Le nombre d'événement doit être strictement positif.", 1)
-    size = N + 2 * n
-    cell_width = Xwidth / N
-    lst_dx = []
-    lst_dy = []
-    for i in range(1, events + 1):
-        matrix = create_empty_matrix(size)
-        all_coords = create_event(Xwidth, N, n, matrix, 1)
-        print("\n¤ Événement n°", i, " : ", sep="")
+        linked_coords_list = link_rec_true_coords(rec_coords_list, true_coords_list)
+        lst_dx = []
+        lst_dy = []
+        for j in range(len(linked_coords_list)):
+            linked_coords = linked_coords_list[j]
+            true_coord = true_coords_list[j]
+            x_true = true_coord[0]
+            y_true = true_coord[1]
+            x_link = linked_coords[0]
+            y_link = linked_coords[1]
+            dx = abs(x_true - x_link)
+            dy = abs(y_true - y_link)
+            lst_dx.append(dx)
+            lst_dy.append(dy)
+        print("\n- Événement n°", i, " : ", sep="")
         affiche_matrice_energy(matrix)
-        lst_vrai = all_coords[0]
-        x_vrai = lst_vrai[0]
-        y_vrai = lst_vrai[1]
-        lst_rec = mesure_xy(matrix, cell_width)
-        x_rec = lst_rec[0]
-        y_rec = lst_rec[1]
-        print("¤ Taille d'une cellule : ", cell_width, "cm", sep="")
-        print("¤ Coordonnées reconstituées :\n\t- x : ", round(x_rec, 2), "cm\n\t- y : ", round(y_rec, 2), "cm", sep="")
-        dx = abs(x_vrai - x_rec)
-        dy = abs(y_vrai - y_rec)
-        lst_dx.append(dx)
-        lst_dy.append(dy)
-        print("¤ Différence entre les coordonnées réelles et reconstituées :\n\t- x : ", round(dx, 2), "cm\n\t- y : ", round(dy, 2), "cm", sep="")
-    mean_dx = mean(lst_dx)
-    mean_dy = mean(lst_dy)
-    sigma_dx = standard_deviation(lst_dx)
-    sigma_dy = standard_deviation(lst_dy)
-    print("\n")
-    print("¤ Performance du détecteur selon les différences entre les coordonnées réelles et reconstituées à chaque événements :")
-    print("\t* Moyenne :\n\t\t- x : ", round(mean_dx, 2), "cm\n\t\t- y : ", round(mean_dy, 2), "cm", sep="")
-    print("\t* Écart-type :\n\t\t- x : ", round(sigma_dx, 2), "cm\n\t\t- y : ", round(sigma_dy, 2), "cm", sep="")
+        mean_dx = mean(lst_dx)
+        mean_dy = mean(lst_dy)
+        sigma_dx = standard_deviation(lst_dx)
+        sigma_dy = standard_deviation(lst_dy)
 
-# Nous devons encore créer une troisième fonction main pour calculer les coordonnées reconstituées avec les clusters, en utilisant les dernières fonctions du fichier "analysis.py"
+
+if __name__ == "__main__":
+    main()

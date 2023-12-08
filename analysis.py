@@ -1,6 +1,7 @@
 from util import error, sub_list
 from math import log
 from copy import deepcopy
+from simulation import calc_all_coords, xy_to_ij
 
 
 # Fonction inverse de xy_to_ij
@@ -44,16 +45,6 @@ def mesure_xy(matrix, cell_width, has_energy=True):
     return [x_rec, y_rec]
 
 
-# Est-ce que la cellule est déjà sur le cluster ?
-def is_cell_in_cluster(cluster, cell):
-    i = cell[0]
-    j = cell[1]
-    for candidate in cluster:
-        if i == candidate[0] and j == candidate[1]:
-            return True
-    return False
-
-
 # Fonction récursive pour déterminer les cellules voisines
 def loop_clusterize(cluster, matrix, cell):
     size = len(matrix)
@@ -66,23 +57,37 @@ def loop_clusterize(cluster, matrix, cell):
     cluster.append(cell)
     i = cell[0]
     j = cell[1]
+    matrix[i][j] = 0.0  # On reset la cellule de la matrice pour qu'elle ne soit pas prise en compte dans les prochaines itérations de la fonction récursive
     for delta in deltas:
         other_i = i + delta[0]
         other_j = j + delta[1]
         if 0 <= other_i < size and 0 <= other_j < size:
             other_energy = matrix[other_i][other_j]
             other_cell = [other_i, other_j, other_energy]
-            if other_energy > 0 and not is_cell_in_cluster(cluster, other_cell):
+            if other_energy > 0:
                 loop_clusterize(cluster, matrix, other_cell)
 
 
 # Est-ce que la matrice est vide ?
-def is_matrix_empty(matrix):
+def is_matrix_empty(matrix, threshold=0.0):  # threshold représente le seuil à partir duquel on considère une cellule vide
     for line in matrix:
         for element in line:
-            if element > 0.0:
+            if element > threshold:
                 return False
     return True
+
+
+# Conversion des cellules d'un cluster en coordonnées ij vers xy
+def cluster_ij_to_xy(matrix, cluster):
+    size = len(matrix)
+    for cell in cluster:
+        i = cell[0]
+        j = cell[1]
+        lst_xy = ij_to_xy([i, j], size)
+        x = lst_xy[0]
+        y = lst_xy[1]
+        cell[0] = x
+        cell[1] = y
 
 
 # Création de la liste de clusters
@@ -93,7 +98,6 @@ def clusterize(matrix):
         if len(line) != size:
             error("La matrice doit être carrée")
             return
-
     clusters = []
     while not is_matrix_empty(copy_matrix):
         max_cell = [0, 0, 0.0]
@@ -104,10 +108,7 @@ def clusterize(matrix):
                     max_cell = [i, j, energy]
         cluster = []
         loop_clusterize(cluster, copy_matrix, max_cell)
-        for cell in cluster:
-            i = cell[0]
-            j = cell[1]
-            copy_matrix[i][j] = 0.0
+        cluster_ij_to_xy(matrix, cluster)
         clusters.append(cluster)
     return clusters
 
@@ -138,55 +139,25 @@ def mesure_xy_cluster(matrix, cell_width, cluster, has_energy=True):
     return [x_rec, y_rec]
 
 
-# --- CETTE PARTIE N'EST PAS TERMINEE --- Elle concerne l'estimation des performances du détecteur avec les clusters
-
-
-# Fonction récursive pour le tri fusion
-def fusion(lst_a, lst_b, isCell=True):
-    n_a = len(lst_a)
-    n_b = len(lst_b)
-    if n_a == 0:
-        return lst_b
-    if n_b == 0:
-        return lst_a
-    if isCell:
-        if lst_a[0][2] <= lst_b[0][2]:
-            return [lst_a[0]] + fusion(sub_list(lst_a, 1, n_a), lst_b, isCell)
-    else:
-        if lst_a[0][0][2] <= lst_b[0][0][2]:
-            return [lst_a[0]] + fusion(sub_list(lst_a, 1, n_a), lst_b, isCell)
-    return [lst_b[0]] + fusion(lst_a, sub_list(lst_b, 1, n_b), isCell)
-
-
-# Tri fusion récursif
-def fusion_sort(lst, isCell=True):
-    n = len(lst)
-    if n <= 1:
-        return lst
-    mid = n // 2
-    return fusion(fusion_sort(sub_list(lst, 0, mid)), fusion_sort(sub_list(lst, mid, n)), isCell)
-
-
-# Tri des clusters et des vraies coordonnées des particules par ordre croissant d'énergie afin de les faire correspondre pour les calculs statistiques des performances
-def sort_cluster_and_vrai(matrix, clusters, coords_vrai_ij):
-    cells_vrai = []
-    for lst_coords_ij in coords_vrai_ij:
-        i = lst_coords_ij[0]
-        j = lst_coords_ij[1]
-        cells_vrai.append([i, j, matrix[i][j]])
-    sorted_clusters = fusion_sort(clusters, False)
-    sorted_cells_vrai = fusion_sort(cells_vrai)
-    return sorted_clusters, sorted_cells_vrai
-
-
-# Conversion des cellules d'un cluster en coordonnées ij vers xy
-def cluster_ij_to_xy(matrix, cluster):
-    size = len(matrix)
-    for cell in cluster:
-        i = cell[0]
-        j = cell[1]
-        lst_xy = ij_to_xy([i, j], size)
-        x = lst_xy[0]
-        y = lst_xy[1]
-        cell[0] = x
-        cell[1] = y
+def link_rec_true_coords(rec_coords_list, init_true_coords_list):
+    linked_coords_list = []
+    true_coords_list = init_true_coords_list.copy()
+    for rec_coords in rec_coords_list:
+        true_coords = true_coords_list[0]
+        true_x = true_coords[0]
+        true_y = true_coords[1]
+        rec_x = rec_coords[0]
+        rec_y = rec_coords[1]
+        min_distance = abs(rec_x - true_x) + abs(rec_y - true_y)
+        min_index = 0
+        for index in range(1, len(true_coords_list)):  # L'indice 0 a déjà été vérifié avant la boucle
+            true_coords = true_coords_list[index]
+            true_x = true_coords[0]
+            true_y = true_coords[1]
+            distance = abs(rec_x - true_x) + abs(rec_y - true_y)  # Cette distance ne représente pas de grandeur réelle, c'est un nombre indicatif pour comparer les coordonnées entre elle
+            if distance < min_distance:
+                min_distance = distance
+                min_index = index
+        linked_coords_list.append(true_coords_list[min_index])
+        true_coords_list.pop(min_index)
+    return linked_coords_list  # La liste retournée contient les coordonnées reconstituées
