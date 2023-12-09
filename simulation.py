@@ -2,6 +2,8 @@ from random import random, gauss
 from copy import deepcopy
 from util import error
 
+# Ce fichier contient toutes les fonctions permettant de simuler l'arrivée d'une particule dans le détecteur
+
 
 def create_empty_matrix(nbCells, marge=0):  # Créer une matrice vide
     if nbCells <= 0:
@@ -68,12 +70,12 @@ def generate_partic_coords(Xwidth):
     if Xwidth <= 0:
         error("La longueur du détecteur doit être strictement positive")
         return
-    x = Xwidth * random()
+    x = Xwidth * random()  # random renvois un nombre en 0 et 1, donc cela permet de faire un nombre aléatoire en 0 et Xwidth
     y = Xwidth * random()
     return [x, y]
 
 
-# Séparer les coordonnées entière et fractionnaire de la cellules
+# Séparer les coordonnées entière et fractionnaire de la cellule
 def calc_all_coords(lst_coords_in_det, cell_width):
     if cell_width <= 0:
         error("La taille des cellules doit être strictement positive")

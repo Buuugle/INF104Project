@@ -1,3 +1,6 @@
+# Ce fichier contient des fonctions utilitaires utilisées surtout dans les fonctions main
+
+
 def error(message):  # Cette fonction est un print décoré
     print("\n\n*** ATTENTION ***\n", message, sep="")
 
@@ -12,7 +15,7 @@ def is_str_number(string):  # Est-ce qu'une chaine de caractères peut être con
     return True
 
 
-# 3 fonctions d'input sécurisées qui font des boucles si la valeur n'est pas dans l'intervalle spécifié
+# 6 fonctions d'input sécurisées qui font des boucles si la valeur n'est pas dans l'intervalle spécifié
 def min_int_input(message, fail="", value=0):
     while True:
         string = input(message)
@@ -52,7 +55,7 @@ def min_float_input(message, fail="", value=0.0):
         string = input(message)
         if is_str_number(string):
             n = float(string)
-            if value >= n:
+            if value <= n:
                 return n
         print(fail)
 
@@ -62,7 +65,7 @@ def max_float_input(message, fail="", value=0.0):
         string = input(message)
         if is_str_number(string):
             n = float(string)
-            if value <= n:
+            if value >= n:
                 return n
         print(fail)
 
@@ -77,6 +80,7 @@ def range_float_input(message, fail="", min_value=0.0, max_value=100.0):
         print(fail)
 
 
+# Moyenne d'une liste
 def mean(lst):  # Moyenne d'une liste
     size = len(lst)
     if size == 0:
@@ -88,6 +92,7 @@ def mean(lst):  # Moyenne d'une liste
     return m
 
 
+# Écart type d'une liste
 def standard_deviation(lst):  # Ecart type d'une liste
     size = len(lst)
     if size == 0:
@@ -100,8 +105,32 @@ def standard_deviation(lst):  # Ecart type d'une liste
     return sigma
 
 
-def sub_list(lst, index_a, index_b):  # Créer une sous liste d'une liste
-    result = []
-    for index in range(index_a, index_b):
-        result.append(lst[index])
-    return result
+# Affichage d'une matrice sous la forme d'un tableau
+def print_table(table):
+    line_size = len(table[0])
+    for line in table:
+        if len(line) != line_size:
+            error("Toutes les lignes du tableau doivent avoir le même nombre d'éléments")
+            return
+    max_lengths = []  # On récupère la longueur maximale des éléments de chaque colonne pour pouvoir faire un affichage aligné
+    for i in range(line_size):
+        max_length = 0
+        for line in table:
+            length = len(line[i])
+            if length > max_length:
+                max_length = length
+        max_lengths.append(max_length)
+
+    separator = "+"
+    for length in max_lengths:
+        separator += "-" * (length + 2) + "+"
+    print(separator)  # Cette chaîne de caractère représente une ligne séparatrice entre les lignes
+    for line in table:  # On affiche chaque ligne de données
+        current = "| "
+        for index in range(len(line)):
+            element = line[index]
+            length = max_lengths[index]
+            spaces = length - len(element)
+            current += element + " " * spaces + " | "
+        print(current)
+        print(separator)

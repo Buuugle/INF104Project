@@ -1,7 +1,8 @@
-from util import error, sub_list
+from util import error
 from math import log
 from copy import deepcopy
-from simulation import calc_all_coords, xy_to_ij
+
+# Ce fichier contient toutes les fonctions liées à l'analyse des données fournies par la simulation
 
 
 # Fonction inverse de xy_to_ij
@@ -27,12 +28,12 @@ def mesure_xy(matrix, cell_width, has_energy=True):
     x_rec = 0
     y_rec = 0
     total_weight = 0
-    for i in range(size):
+    for i in range(size):  # Application des sommes sous la forme de boucle
         for j in range(size):
             energy = matrix[i][j]
             if energy > 0:
                 weight = 1
-                if has_energy:
+                if has_energy:  # Option pour utiliser ou non l'énergie de la cellule comme un poids pour la somme
                     weight = log(2 + energy)
                 total_weight += weight
                 lst_xy = ij_to_xy([i, j], size)
@@ -46,7 +47,7 @@ def mesure_xy(matrix, cell_width, has_energy=True):
 
 
 # Fonction récursive pour déterminer les cellules voisines
-def loop_clusterize(cluster, matrix, cell):
+def loop_clusterize(cluster, matrix, cell, threshold=0.0):
     size = len(matrix)
     deltas = [
         [0, 1],
@@ -57,15 +58,15 @@ def loop_clusterize(cluster, matrix, cell):
     cluster.append(cell)
     i = cell[0]
     j = cell[1]
-    matrix[i][j] = 0.0  # On reset la cellule de la matrice pour qu'elle ne soit pas prise en compte dans les prochaines itérations de la fonction récursive
+    matrix[i][j] = 0.0  # On réinitialise la cellule de la matrice pour qu'elle ne soit pas prise en compte dans les prochaines itérations de la fonction récursive
     for delta in deltas:
         other_i = i + delta[0]
         other_j = j + delta[1]
         if 0 <= other_i < size and 0 <= other_j < size:
             other_energy = matrix[other_i][other_j]
             other_cell = [other_i, other_j, other_energy]
-            if other_energy > 0:
-                loop_clusterize(cluster, matrix, other_cell)
+            if other_energy > threshold:
+                loop_clusterize(cluster, matrix, other_cell)  # La récursion a lieu ici
 
 
 # Est-ce que la matrice est vide ?
@@ -91,7 +92,7 @@ def cluster_ij_to_xy(matrix, cluster):
 
 
 # Création de la liste de clusters
-def clusterize(matrix):
+def clusterize(matrix, threshold=0.0):
     copy_matrix = deepcopy(matrix)
     size = len(copy_matrix)
     for line in copy_matrix:
@@ -99,7 +100,7 @@ def clusterize(matrix):
             error("La matrice doit être carrée")
             return
     clusters = []
-    while not is_matrix_empty(copy_matrix):
+    while not is_matrix_empty(copy_matrix, threshold):  # On applique la détection de cluster tant qu'il reste des cellules
         max_cell = [0, 0, 0.0]
         for i in range(size):
             for j in range(size):
@@ -107,8 +108,8 @@ def clusterize(matrix):
                 if energy > max_cell[2]:
                     max_cell = [i, j, energy]
         cluster = []
-        loop_clusterize(cluster, copy_matrix, max_cell)
-        cluster_ij_to_xy(matrix, cluster)
+        loop_clusterize(cluster, copy_matrix, max_cell, threshold)
+        cluster_ij_to_xy(matrix, cluster)  # On convertit les coordonnées ij en xy seulement ici, car on a besoin des coordonnées ij pour la récursivité
         clusters.append(cluster)
     return clusters
 
@@ -123,7 +124,7 @@ def mesure_xy_cluster(matrix, cell_width, cluster, has_energy=True):
     x_rec = 0
     y_rec = 0
     total_weight = 0
-    for cell in cluster:
+    for cell in cluster:  # Le code est très similaire à mesure_xy, mais on se limite ici au cluster
         energy = cell[2]
         if energy > 0:
             weight = 1
@@ -139,10 +140,12 @@ def mesure_xy_cluster(matrix, cell_width, cluster, has_energy=True):
     return [x_rec, y_rec]
 
 
-def link_rec_true_coords(rec_coords_list, init_true_coords_list):
+def link_rec_true_coords(rec_coords_list, init_true_coords_list):  # Permet de lier les coordonnées réelles à celles reconstituées (sous la forme de couple) afin de pouvoir les comparer
     linked_coords_list = []
     true_coords_list = init_true_coords_list.copy()
-    for rec_coords in rec_coords_list:
+    for rec_coords in rec_coords_list:  # On minimise l'écart entre les coordonnées réelles et reconstituées pour former un couple
+        if len(true_coords_list) == 0:
+            return linked_coords_list
         true_coords = true_coords_list[0]
         true_x = true_coords[0]
         true_y = true_coords[1]
@@ -159,5 +162,7 @@ def link_rec_true_coords(rec_coords_list, init_true_coords_list):
                 min_distance = distance
                 min_index = index
         linked_coords_list.append(true_coords_list[min_index])
-        true_coords_list.pop(min_index)
-    return linked_coords_list  # La liste retournée contient les coordonnées reconstituées
+        true_coords_list.pop(min_index)  # On retire la coordonnée afin qu'elle ne soit pas dans deux couples en même temps
+    for true_coords in true_coords_list:
+        linked_coords_list.append(true_coords)  # Les coordonnées vraies restantes ne sont pas associées à des coordonnées reconstituées
+    return linked_coords_list  # La liste retournée contient les coordonnées réelles. Les coordonnées réelles et reconstituées d'un même couple ont le même indice dans les deux listes réelle et reconstituée

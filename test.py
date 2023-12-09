@@ -2,9 +2,14 @@ from util import *
 from simulation import *
 from analysis import *
 
+# Ce fichier contre les fonctions main intermédiaire utilisée pour tester certaines parties du projet
+
 
 # Première fonction main. On simule des lancers de particules
 def mon_main(N):
+
+    # On récupère les valeurs des différents paramètres avec des inputs sécurisés (voir util.py)
+
     print("--- SIMULATEUR DE CALORIMÈTRE ---")
     Xwidth = 100
     n = 2
@@ -20,6 +25,9 @@ def mon_main(N):
 
 # Deuxième fonction main. On simule des lancers de particules ET on reconstitue les coordonnées avec la méthode brute
 def mon_main2(N):
+
+    # Cette fonction est similaire à mon_main, mais on ajoute la comparaison par la méthode brute
+
     print("--- SIMULATEUR DE CALORIMÈTRE V2---")
     Xwidth = 100
     n = 2
@@ -28,7 +36,7 @@ def mon_main2(N):
     cell_width = Xwidth / N
     lst_dx = []
     lst_dy = []
-    for i in range(1, events + 1):
+    for i in range(1, events + 1):  # On simule
         matrix = create_empty_matrix(size)
         all_coords = create_event(Xwidth, N, n, matrix, 1)
         print("\n¤ Événement n°", i, " : ", sep="")
