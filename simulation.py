@@ -215,7 +215,7 @@ def add_noise(matrix, ratio=0.05):
 
 
 # Lancement de plusieurs particules
-def create_event(Xwidth, N, n, matrix, particles, noise_ratio):
+def create_event(Xwidth, N, n, matrix, particles, noise_ratio=0.0):
     if particles <= 0:
         error("Le nombre de particules doit être strictement positif")
         return

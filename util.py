@@ -80,7 +80,6 @@ def range_float_input(message, fail="", min_value=0.0, max_value=100.0):
         print(fail)
 
 
-# Moyenne d'une liste
 def mean(lst):  # Moyenne d'une liste
     size = len(lst)
     if size == 0:
@@ -92,8 +91,7 @@ def mean(lst):  # Moyenne d'une liste
     return m
 
 
-# Écart type d'une liste
-def standard_deviation(lst):  # Ecart type d'une liste
+def standard_deviation(lst):  # Écart type d'une liste
     size = len(lst)
     if size == 0:
         return 0
@@ -105,8 +103,7 @@ def standard_deviation(lst):  # Ecart type d'une liste
     return sigma
 
 
-# Affichage d'une matrice sous la forme d'un tableau
-def print_table(table):
+def print_table(table):  # Affichage d'une matrice sous la forme d'un tableau
     line_size = len(table[0])
     for line in table:
         if len(line) != line_size:
