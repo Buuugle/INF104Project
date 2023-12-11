@@ -2,8 +2,7 @@ from util import *
 from simulation import *
 from analysis import *
 
-
-# Ce fichier contient la véritable fonction main du programme qui test la version définitive du détecteur de particule
+# Ce fichier contient la véritable fonction main du programme qui test la version définitive du détecteur de particule (avec les clusters)
 
 
 def main():
@@ -91,9 +90,9 @@ def main():
         affiche_matrice_energy(matrix)
         print("- Résumé des mesures en cm :")
         print_table(coords_table)  # Voir util.py
-        print("- Moyenne des différences en cm (x, y) : (" + str(mean_dx) + ", " + str(mean_dy) + ")")
-        print("- Écart type des différences en cm (x, y) : (" + str(sigma_dx) + ", " + str(sigma_dy) + ")")
-        print("- Nombre de coordonnées de particules reconstituées : " + str(success_rec) + "/" + str(particles))
+        print("- Moyenne des différences en cm (x, y) : (", mean_dx, ", ", mean_dy, ")", sep="")
+        print("- Écart type des différences en cm (x, y) : (", sigma_dx, ", ", sigma_dy, ")", sep="")
+        print("- Nombre de coordonnées de particules reconstituées : ", success_rec, "/", particles, sep="")
 
     total_mean_dx = round(mean(all_lst_dx), 2)
     total_mean_dy = round(mean(all_lst_dy), 2)
@@ -102,9 +101,9 @@ def main():
     ratio_success = round(all_success_rec / (particles * events) * 100, 2)
 
     print("\n--- Statistiques finaux ---")
-    print("- Moyenne totale des différences en cm (x, y) : (" + str(total_mean_dx) + ", " + str(total_mean_dy) + ")")
-    print("- Écart type total des différences en cm (x, y) : (" + str(total_sigma_dx) + ", " + str(total_sigma_dy) + ")")
-    print("- Proportion totale de particules reconstituées : " + str(ratio_success) + "%")
+    print("- Moyenne totale des différences en cm (x, y) : (", total_mean_dx, ", ", total_mean_dy, ")", sep="")
+    print("- Écart type total des différences en cm (x, y) : (", total_sigma_dx, ", ", total_sigma_dy, ")", sep="")
+    print("- Proportion totale de particules reconstituées : ", ratio_success, "%", sep="")
 
 
 if __name__ == "__main__":

@@ -5,13 +5,19 @@ def error(message):  # Cette fonction est un print décoré
     print("\n\n*** ATTENTION ***\n", message, sep="")
 
 
-def is_str_number(string):  # Est-ce qu'une chaine de caractères peut être convertie en int ou float ?
+def is_str_number(string, is_int=False):  # Est-ce qu'une chaine de caractères peut être convertie en int ou float ?
     if len(string) == 0:
         return False
-    digits = "0123456789."
+    digits = "0123456789"
+    has_dot = is_int
     for char in string:
-        if not (char in digits):
-            return False
+        if char == ".":
+            if has_dot:
+                return False
+            has_dot = True
+        else:
+            if not (char in digits):
+                return False
     return True
 
 
@@ -19,7 +25,7 @@ def is_str_number(string):  # Est-ce qu'une chaine de caractères peut être con
 def min_int_input(message, fail="", value=0):
     while True:
         string = input(message)
-        if is_str_number(string):
+        if is_str_number(string, True):
             n = int(string)
             if value <= n:
                 return n
@@ -29,7 +35,7 @@ def min_int_input(message, fail="", value=0):
 def max_int_input(message, fail="", value=0):
     while True:
         string = input(message)
-        if is_str_number(string):
+        if is_str_number(string, True):
             n = int(string)
             if value >= n:
                 return n
@@ -43,7 +49,7 @@ def range_int_input(message, fail="", min_value=0, max_value=100):
         max_value = temp
     while True:
         string = input(message)
-        if is_str_number(string):
+        if is_str_number(string, True):
             n = int(string)
             if min_value <= n <= max_value:
                 return n
@@ -121,7 +127,7 @@ def print_table(table):  # Affichage d'une matrice sous la forme d'un tableau
     separator = "+"
     for length in max_lengths:
         separator += "-" * (length + 2) + "+"
-    print(separator)  # Cette chaîne de caractère représente une ligne séparatrice entre les lignes
+    print(separator)  # Cette chaîne de caractère représente une ligne séparatrice entre les lignes du tableau
     for line in table:  # On affiche chaque ligne de données
         current = "| "
         for index in range(len(line)):
